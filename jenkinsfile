@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+ 
+    stages {
+        stage('checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/sirishar02/project1.git'
+            }
+        }
+        stage('build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        stage('Sonarscanning') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                sh 'mvn sonar:sonar'
+               }
+            }
+        }
+        stage('nexus uploader') {
+            steps {
+                nexusArtifactUploader artifacts: [[artifactId: 'myweb', classifier: '', file: 'target/myweb-8.6.2.war', type: 'war']], credentialsId: 'nexusuploader', groupId: 'in.javahome', nexusUrl: '54.169.105.112:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'Mavennewrepo', version: '8.6.2'
+            }
+        }
+    }
+}
